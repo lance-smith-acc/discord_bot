@@ -1,7 +1,7 @@
 # bot.py
 import os
 import schedule
-import time
+from datetime import datetime
 
 import discord
 from dotenv import load_dotenv
@@ -53,12 +53,36 @@ async def on_message(message):
     # Image response to word within sentence
     for word in word_bank:
         if word in message.content.lower():
-            await message.channel.send(file=discord.File('ricardo1.gif'))
+            await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
             break
+    
+    if ["ass", "booty", "dumper"] in message.content.lower():
+        await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
 
     # Image response to specific phrase
     if message.content.lower() == "can i get a hat wobble?":
-        await message.channel.send(file=discord.File('hatwobble.gif'))
+        await message.channel.send(file=discord.File('reactions/hatwobble.gif'))
+    
+    # Accepts and acknowledges requests for skills
+    if message.channel.id == 733424570136264726:
+
+        # Lists all requests made
+        if message.content.lower() == "!requests":
+            with open('request.log', 'r') as r:
+                requests = list(r)
+            await message.channel.send(f'Here\'s my current requests dawg:\n')
+            for m in requests:
+                await message.channel.send(f'{m}')
+        # Adds datestamped and signed requests to the request log
+        elif message.content[0] == "!":
+            date = datetime.now()
+            print(f'New request recieved')
+            print(f'{message.content[1:]}')
+            with open('request.log', 'a', newline=None) as r:
+                r.write(f'{date} {message.author} - {message.content} \n')
+            await message.channel.send('You got it king!')
+
+        
 
 # Scheduled events
 
