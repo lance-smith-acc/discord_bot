@@ -56,7 +56,7 @@ async def on_message(message):
             await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
             break
     
-    if ["ass", "booty", "dumper"] in message.content.lower():
+    if ["test5", "test6", "test7"] in message.content.lower():
         await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
 
     # Image response to specific phrase
