@@ -5,6 +5,7 @@ from datetime import datetime
 
 import discord
 from dotenv import load_dotenv
+import json
 
 # Loads our .env data
 load_dotenv()
@@ -12,6 +13,13 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_SERVER')
 CHANNEL = os.getenv('MAIN_CHANNEL')
+
+# Loads custom word banks for message monitoring
+input_file = open('banks.json')
+json_array = json.load(input_file)
+wordBank = []
+for bank in json_array:
+    wordBank.append(bank)
 
 client = discord.Client()
 
@@ -28,11 +36,12 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
+
 # Actions performed on member join
 @client.event
 async def on_member_join(member):
-    joinMessage = f'Yo {member.name}'
-    channel = member.get_channel("CHANNEL_ID")
+    joinMessage = f'Yo {member.name}, nice dick'
+    channel = ("CHANNEL_ID")
     await channel.send(joinMessage)
 
 # Call and reponse actions
@@ -40,24 +49,24 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author == client.user:
         return
-    
-    word_bank = [
-        'Test1', 'Test2', 'Test3', 'Test4'
-    ]
-
     # Text response
     if message.content.lower() == "this is a test of call and response":
         response = "This is a successful response"
         await message.channel.send(response)
-    
+
     # Image response to word within sentence
-    for word in word_bank:
-        if word in message.content.lower():
+    for word in wordBank[0]:
+        if word in message.content.lower():  
             await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
             break
     
-    if ["test5", "test6", "test7"] in message.content.lower():
-        await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
+    for word in wordBank[1]:
+        if word in message.content.lower(): 
+            await message.channel.send(file=discord.File('reactions/ricardo2.gif'))
+            break
+    
+    if 'pizza' in message.content.lower():
+        await message.channel.send(file=discord.File('reactions/pizza.gif'))
 
     # Image response to specific phrase
     if message.content.lower() == "can i get a hat wobble?":
@@ -81,8 +90,6 @@ async def on_message(message):
             with open('request.log', 'a', newline=None) as r:
                 r.write(f'{date} {message.author} - {message.content} \n')
             await message.channel.send('You got it king!')
-
-        
 
 # Scheduled events
 
