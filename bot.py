@@ -1,7 +1,5 @@
 # bot.py
 import os
-import schedule
-from datetime import datetime
 from itertools import chain
 
 import discord
@@ -49,8 +47,7 @@ async def on_ready():
 @client.event
 async def on_member_join(member):
     joinMessage = f'Yo {member.name}, welcome'
-    channel = ("CHANNEL_ID")
-    await channel.send(joinMessage)
+    await client.get_channel(CHANNEL).send(joinMessage)
 
 # Call and reponse actions
 @client.event
@@ -65,7 +62,12 @@ async def on_message(message):
             if message.content.lower() in bank:
                 index = wordVault.index(bank)
                 targetBank = wordVault[index]
-                await message.channel.send(file=discord.File(targetBank[-1]))
+                response = targetBank[-1]
+                # Checks to see if response is a string or a file, could lead to potential false positives, but it works for now so just let it
+                if response[-4] == ".":
+                    await message.channel.send(file=discord.File(response))
+                else:
+                    await message.channel.send(response)
 
     # Search for individual words in the message
     elif(w in chain(*wordVault) for w in messageArr):
@@ -75,19 +77,16 @@ async def on_message(message):
                     if word in bank:
                         index = wordVault.index(bank)
                         targetBank = wordVault[index]
-                        print(targetBank[-1])
-                        await message.channel.send(file=discord.File(targetBank[-1]))
-                        break
+                        response = targetBank[-1]
+                        if response[-4] == ".":
+                            await message.channel.send(file=discord.File(response))
+                            break
+                        else:
+                            await message.channel.send(response)
 
-    # # Text response
-    # if message.content.lower() == "this is a test of call and response":
-    #     response = "This is a successful response"
-    #     await message.channel.send(response)
-
-    
     
     # Accepts and acknowledges requests for skills
-    if message.channel.id == HELPCHANNEL:
+    if message.channel.id == int(HELPCHANNEL):
 
         # Lists all requests made
         if message.content.lower() == "!requests":
