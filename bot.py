@@ -40,7 +40,7 @@ async def on_ready():
 # Actions performed on member join
 @client.event
 async def on_member_join(member):
-    joinMessage = f'Yo {member.name}, nice dick'
+    joinMessage = f'Yo {member.name}, welcome'
     channel = ("CHANNEL_ID")
     await channel.send(joinMessage)
 
