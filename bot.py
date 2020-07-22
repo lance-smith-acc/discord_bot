@@ -2,6 +2,7 @@
 import os
 import schedule
 from datetime import datetime
+from itertools import chain
 
 import discord
 from dotenv import load_dotenv
@@ -13,14 +14,17 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_SERVER')
 CHANNEL = os.getenv('MAIN_CHANNEL')
+HELPCHANNEL = os.getenv('HELP_CHANNEL')
 
 # Loads custom word banks for message monitoring
 input_file = open('banks.json')
 json_array = json.load(input_file)
-wordBank = []
+wordVault = []
 for bank in json_array:
-    wordBank.append(bank)
+    wordVault.append(bank)
 
+
+# Sets up client as Discord client and pass it into the command handler #
 client = discord.Client()
 
 # Bot actions
@@ -28,19 +32,23 @@ client = discord.Client()
 # Actions performed on bot load
 @client.event
 async def on_ready():
-    for guild in client.guilds:
-        if guild.name == GUILD:
-            break
-    print(
-        f'{client.user} is connected to the following guild:\n'
-        f'{guild.name}(id: {guild.id})'
-    )
-
+    try:
+        for guild in client.guilds:
+            if guild.name == GUILD:
+                break
+        print(
+            f'{client.user} is connected to the following guild:\n'
+            f'{guild.name}(id: {guild.id})'
+        )
+    except Exception as e:
+        print(e)
+        with open('errors.log', 'a', newline=None) as r:
+                r.write(f'{e} \n')
 
 # Actions performed on member join
 @client.event
 async def on_member_join(member):
-    joinMessage = f'Yo {member.name}, nice dick'
+    joinMessage = f'Yo {member.name}, welcome'
     channel = ("CHANNEL_ID")
     await channel.send(joinMessage)
 
@@ -49,31 +57,37 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author == client.user:
         return
-    # Text response
-    if message.content.lower() == "this is a test of call and response":
-        response = "This is a successful response"
-        await message.channel.send(response)
+    messageArr = message.content.lower().split(" ")
 
-    # Image response to word within sentence
-    for word in wordBank[0]:
-        if word in message.content.lower():  
-            await message.channel.send(file=discord.File('reactions/ricardo1.gif'))
-            break
-    
-    for word in wordBank[1]:
-        if word in message.content.lower(): 
-            await message.channel.send(file=discord.File('reactions/ricardo2.gif'))
-            break
-    
-    if 'pizza' in message.content.lower():
-        await message.channel.send(file=discord.File('reactions/pizza.gif'))
+    # Search for the given phrase
+    if message.content.lower() in chain(*wordVault):
+        for bank in wordVault:
+            if message.content.lower() in bank:
+                index = wordVault.index(bank)
+                targetBank = wordVault[index]
+                await message.channel.send(file=discord.File(targetBank[-1]))
 
-    # Image response to specific phrase
-    if message.content.lower() == "can i get a hat wobble?":
-        await message.channel.send(file=discord.File('reactions/hatwobble.gif'))
+    # Search for individual words in the message
+    elif(w in chain(*wordVault) for w in messageArr):
+        for word in messageArr:
+            if word in chain(*wordVault):
+                for bank in wordVault:
+                    if word in bank:
+                        index = wordVault.index(bank)
+                        targetBank = wordVault[index]
+                        print(targetBank[-1])
+                        await message.channel.send(file=discord.File(targetBank[-1]))
+                        break
+
+    # # Text response
+    # if message.content.lower() == "this is a test of call and response":
+    #     response = "This is a successful response"
+    #     await message.channel.send(response)
+
+    
     
     # Accepts and acknowledges requests for skills
-    if message.channel.id == 733424570136264726:
+    if message.channel.id == HELPCHANNEL:
 
         # Lists all requests made
         if message.content.lower() == "!requests":
