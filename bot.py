@@ -1,10 +1,12 @@
 # bot.py
+import json
 import os
 from itertools import chain
 
 import discord
 from dotenv import load_dotenv
-import json
+
+import requests
 
 # Loads our .env data
 load_dotenv()
@@ -13,6 +15,22 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_SERVER')
 CHANNEL = os.getenv('MAIN_CHANNEL')
 HELPCHANNEL = os.getenv('HELP_CHANNEL')
+
+URL = 'https://official-joke-api.appspot.com/random_joke'
+
+def check_valid_status_code(request):
+    if request.status_code == 200:
+        return request.json()
+
+    return False
+
+
+def get_joke():
+    request = requests.get(URL)
+    data = check_valid_status_code(request)
+
+    return data
+
 
 # Loads custom word banks for message monitoring
 input_file = open('banks.json')
@@ -24,6 +42,8 @@ for bank in json_array:
 
 # Sets up client as Discord client and pass it into the command handler #
 client = discord.Client()
+
+
 
 # Bot actions
 ###############################
@@ -84,7 +104,12 @@ async def on_message(message):
                         else:
                             await message.channel.send(response)
 
-    
+    if message.content.lower() == "!joke": 
+        joke = get_joke()
+        setup = joke['setup']
+        punchline =  joke['punchline']
+        await message.channel.send(f'{setup} {punchline}')
+
     # Accepts and acknowledges requests for skills
     if message.channel.id == int(HELPCHANNEL):
 
@@ -95,7 +120,7 @@ async def on_message(message):
             await message.channel.send(f'Here\'s my current requests dawg:\n')
             for m in requests:
                 await message.channel.send(f'{m}')
-        # Adds datestamped and signed requests to the request log
+        # Adds date stamped and signed requests to the request log
         elif message.content[0] == "!":
             date = datetime.now()
             print(f'New request recieved')
