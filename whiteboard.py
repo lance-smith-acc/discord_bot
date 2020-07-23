@@ -44,23 +44,45 @@ import json
 #     print("Success")
 
 #####################################################################################
-# Begin API Testing
+# # Begin API Testing
 import requests
-HEADER = {'Accept':'application/json', "User-Agent":"https://github.com/lance-smith-acc/discord_bot"}
+# HEADER = {'Accept':'application/json', "User-Agent":"https://github.com/lance-smith-acc/discord_bot"}
+# # api-endpoint 
+# URL = "https://icanhazdadjoke.com/"
+# # location given here 
+# location = "discord bot"
+# # defining a params dict for the parameters to be sent to the API 
+# PARAMS = {'address':location} 
+# # sending get request and saving the response as response object 
+# r = requests.get(url = URL, params = PARAMS, headers= HEADER) 
+# # extracting data in json format  
+# data = r.json()
+# print(data['joke'])
 
-# api-endpoint 
-URL = "https://icanhazdadjoke.com/"
-  
-# location given here 
-location = "discord bot"
-  
-# defining a params dict for the parameters to be sent to the API 
-PARAMS = {'address':location} 
-  
-# sending get request and saving the response as response object 
-r = requests.get(url = URL, params = PARAMS, headers= HEADER) 
-  
-# extracting data in json format  
-data = r.json()
 
-print(data['joke'])
+def check_valid_status_code(request):
+    if request.status_code == 200:
+        return request.json()
+
+    return False
+
+def get_joke():
+    URL = 'https://official-joke-api.appspot.com/random_joke'
+    request = requests.get(URL)
+    data = check_valid_status_code(request)
+
+    return data
+
+joke = get_joke()
+print(joke)
+setup = joke['setup']
+punchline =  joke['punchline']
+print(f'{setup}')
+
+context = setup.split(" ")
+context = context[0]
+if context in ["Who", "What", "Why", "When", "Where", "How"]:
+    print(context)
+    print(punchline)
+else:
+    print(punchline)

@@ -2,6 +2,7 @@
 import json
 import os
 from itertools import chain
+import asyncio
 
 import discord
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ GUILD = os.getenv('DISCORD_SERVER')
 CHANNEL = os.getenv('MAIN_CHANNEL')
 HELPCHANNEL = os.getenv('HELP_CHANNEL')
 
-URL = 'https://official-joke-api.appspot.com/random_joke'
+
 
 def check_valid_status_code(request):
     if request.status_code == 200:
@@ -26,6 +27,7 @@ def check_valid_status_code(request):
 
 
 def get_joke():
+    URL = 'https://official-joke-api.appspot.com/random_joke'
     request = requests.get(URL)
     data = check_valid_status_code(request)
 
@@ -104,11 +106,31 @@ async def on_message(message):
                         else:
                             await message.channel.send(response)
 
-    if message.content.lower() == "!joke": 
+    if "joke" in message.content.lower():
         joke = get_joke()
+        print(joke)
         setup = joke['setup']
+        await message.channel.send(f'{setup}')
         punchline =  joke['punchline']
-        await message.channel.send(f'{setup} {punchline}')
+        context = setup.replace('\'', ' ').split(" ")
+        context = context[0].lower()
+        print(context)
+
+        if context in ["who", "what", "why", "when", "where", "how"]:
+            print("if")
+            print(f'message content:{message.content}')
+            try:
+                msg = await client.wait_for('message', timeout=5.0)
+            except asyncio.TimeoutError:
+                await message.channel.send(f'{punchline}')
+
+            if context in msg.content.lower():
+                await message.channel.send(f'{punchline}')
+            else:
+                await message.channel.send(f'No stupid: {punchline}')
+        else:
+            await message.channel.send(f'{punchline}')
+
 
     # Accepts and acknowledges requests for skills
     if message.channel.id == int(HELPCHANNEL):
